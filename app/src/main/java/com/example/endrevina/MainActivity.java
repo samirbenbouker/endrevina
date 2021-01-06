@@ -78,13 +78,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String nameUser;
     private int attemptsUser;
-    private String timeUser;
+    private Integer timeUser;
     private Bitmap photoUser;
-
-    //private long startTime;
-    //private long endTime;
-
-    private CharSequence charSequenceText;
 
     private AlertDialog.Builder adb;
     private AlertDialog adRanking;
@@ -97,12 +92,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         usersList = new ArrayList<User>();
-        //
-        RankingActivity rankingActivity = new RankingActivity();
 
-        randomNumber = 50;
-        //randomNumber = (int) (Math.random()*100);
-        //System.out.println(randomNumber);
+        randomNumber = (int) (Math.random()*100);
 
         txtTrack = (TextView) findViewById(R.id.txtTrack); //text track
 
@@ -121,9 +112,9 @@ public class MainActivity extends AppCompatActivity {
         txtFindTheNumber = (EditText) findViewById(R.id.txtFindTheNumber); //edit text where write the number
 
         try{
-            checkDir();
-            checkXML();
-            readXML();
+            checkDir(); //we check the directories of the files
+            checkXML(); //we check xml
+            readXML(); //we read file xml in directories
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -142,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
                         txtTrack.setText("CONGRATULATIONS YOU FOUND THE NUMBER!!!");
                         txtTimmer.stop(); //when user found the number chronomter to stop
 
-                        timeUser = String.valueOf(totalTime(txtTimmer.getText().toString()));
+                        timeUser = totalTime(txtTimmer.getText().toString());
 
                         btGuess.setEnabled(false); //set not enable button guess
                         btAgain.setEnabled(true); //set enable button guess
@@ -179,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
         btSaveScore.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showRankingDialog();
+                showRankingDialog(); //If you decide to save the time we go to the dialog function
             }
         });
 
@@ -197,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void checkDir(){
         if(!filesDir.exists()){
-            filesDir.mkdir();
+            filesDir.mkdir(); //create file in directories
             filePhotoDir.mkdir();
             return;
         }
@@ -212,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
             dbf = DocumentBuilderFactory.newInstance();
             db = dbf.newDocumentBuilder();
 
-            if(!fileRanking.exists()){
+            if(!fileRanking.exists()){ // if it is the first time of the application, all the files are created
                 domi = db.getDOMImplementation();
 
                 rankingDoc = domi.createDocument(null, "ranking", null);
@@ -233,7 +224,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void readXML(){
+    public void readXML(){ // read file xml
         usersList.clear();
 
         try{
@@ -257,7 +248,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
 
                         case "time":
-                            timeUser = recordDataNode.getTextContent();
+                            timeUser = Integer.valueOf(recordDataNode.getTextContent());
                             break;
 
                         case "photo":
@@ -267,8 +258,7 @@ public class MainActivity extends AppCompatActivity {
                             break;
                     }
                 }
-
-                usersList.add(new User(nameUser, attemptsUser, timeUser, photoUser));
+                usersList.add(new User(nameUser, attemptsUser, timeUser, photoUser)); // add a new user in user array list
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -276,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    private void setRankingDialog() {
+    private void setRankingDialog() { //create a dialog
         adb = new AlertDialog.Builder(this);
 
         adb.setTitle("Do you want to play again?");
@@ -287,7 +277,6 @@ public class MainActivity extends AppCompatActivity {
         adb.setView(txtName);
 
         adb.setPositiveButton("YES", null);
-        //adb.setNegativeButton("NO", null);
 
         adRanking = adb.create();
 
@@ -295,13 +284,12 @@ public class MainActivity extends AppCompatActivity {
         adRanking.setCanceledOnTouchOutside(false);
     }
 
-    private void showRankingDialog(){
+    private void showRankingDialog(){ // show ranking dialog
         adRanking.show();
 
         Button btYes = adRanking.getButton(AlertDialog.BUTTON_POSITIVE);
-        //Button btNo = adRanking.getButton(AlertDialog.BUTTON_NEGATIVE);
 
-        btYes.setOnClickListener(new View.OnClickListener() {
+        btYes.setOnClickListener(new View.OnClickListener() { // when press yes, the camera open
             @Override
             public void onClick(View v) {
                 if(!txtName.getText().toString().equals("")){
@@ -312,19 +300,18 @@ public class MainActivity extends AppCompatActivity {
                     adRanking.dismiss();
 
                     takePhoto();
-                    //startActivity(new Intent(MainActivity.this, RankingActivity.class));
                 }
             }
         });
     }
 
-    private void takePhoto(){
+    private void takePhoto(){ //take a photo
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
         startActivityForResult(takePictureIntent, 1);
     }
 
-    public int totalTime(String time){
+    public int totalTime(String time){ // time in ranking is in seconds, and use this function to go from minutes to seconds
         String[] timeSplit = time.split(":");
 
         int min = Integer.valueOf(timeSplit[0]);
@@ -348,6 +335,22 @@ public class MainActivity extends AppCompatActivity {
             Bundle extras = intent.getExtras();
             photoUser = (Bitmap) extras.get("data");
 
+            savePhoto(); // save photo in memori phone
+
+            newUser = new User(nameUser, attemptsUser, timeUser, photoUser);
+
+            usersList.add(getRightIndex(), newUser);
+
+            writeXML();
+
+            //startActivity(new Intent(getApplicationContext(), MainActivity.class)); //start again main activity
+
+            startActivity(new Intent(MainActivity.this, RankingActivity.class));
+        }
+        else{
+            Bundle extras = intent.getExtras();
+            photoUser = (Bitmap) extras.get("data");
+
             savePhoto();
 
             newUser = new User(nameUser, attemptsUser, timeUser, photoUser);
@@ -356,11 +359,13 @@ public class MainActivity extends AppCompatActivity {
 
             writeXML();
 
+            //startActivity(new Intent(getApplicationContext(), MainActivity.class)); //start again main activity
+
             startActivity(new Intent(MainActivity.this, RankingActivity.class));
         }
     }
 
-    private void savePhoto(){
+    private void savePhoto(){ // save photo in memory phone and use when open again application use this photos for create ranking
         photoFile = new File(filePhotoDir +"/"+ nameUser + extPhoto);
 
         try{
@@ -375,7 +380,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private int getRightIndex(){
+    private int getRightIndex(){ // use this fuction to have array list ranking organized
         int infLimit = 0;
         int supLimit = usersList.size()-1;
         int indexSearch;
@@ -431,11 +436,11 @@ public class MainActivity extends AppCompatActivity {
         return 0;
     }
 
-    public int newRecordCompare(int indexSearch){
+    public int newRecordCompare(int indexSearch){ // With this function we compare the last Record with a Record from the list
         return newUser.compareRecords(usersList.get(indexSearch));
     }
 
-    private void writeXML(){
+    private void writeXML(){ // write xml file in memory phone, set all tag xml and values
         fileRanking.delete();
 
         domi = db.getDOMImplementation();
@@ -453,12 +458,12 @@ public class MainActivity extends AppCompatActivity {
                 elementName.appendChild(textName);
 
                 Element elementAttempts = rankingDoc.createElement("attempts");
-                Text textAttempts = rankingDoc.createTextNode(String.valueOf(usersList.get(i).getAttempts()));
+                Text textAttempts = rankingDoc.createTextNode(String.valueOf(txtAttempts.getText().toString()));
 
                 elementAttempts.appendChild(textAttempts);
 
                 Element elementTime = rankingDoc.createElement("time");
-                Text textTime = rankingDoc.createTextNode(usersList.get(i).getName());
+                Text textTime = rankingDoc.createTextNode(String.valueOf(usersList.get(i).getTime()));
 
                 elementTime.appendChild(textTime);
 

@@ -35,11 +35,7 @@ public class RankingActivity extends AppCompatActivity {
 
     private Button btBack;
 
-    private final File filesDir = new File("/data/user/0/com.example.endrevina/files");;
-    private final File filePhotoDir = new File("/data/user/0/com.example.endrevina/files/photos");
     private final File fileRanking = new File("/data/user/0/com.example.endrevina/files/ranking.xml");
-
-    //private final String extPhoto = ".jpeg";
 
     private DocumentBuilderFactory dbf;
     private DocumentBuilder db;
@@ -49,8 +45,7 @@ public class RankingActivity extends AppCompatActivity {
     
     private String name;
     private int attempts;
-    private String time;
-    //private Bitmap photo;
+    private Integer time;
 
     private RecyclerView recyclerViewRecords;
     private InfoRecords infoRecords;
@@ -70,8 +65,6 @@ public class RankingActivity extends AppCompatActivity {
                 startActivity(new Intent(getApplicationContext(), MainActivity.class));
             }
         });
-
-        //Intent intent = getIntent();
 
         try{
             preapreReader();
@@ -125,7 +118,7 @@ public class RankingActivity extends AppCompatActivity {
                             break;
 
                         case "time":
-                            time = recordDataNode.getTextContent();
+                            time = Integer.valueOf(recordDataNode.getTextContent());
                             break;
 
                         case "photo":

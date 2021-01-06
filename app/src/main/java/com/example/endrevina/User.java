@@ -6,14 +6,14 @@ public class User {
 
     private String name;
     private int attempts;
-    private String time;
+    private int time;
     private Bitmap photo;
 
     public User(){
 
     }
 
-    public User(String name, int attempts, String time, Bitmap photo){
+    public User(String name, int attempts, int time, Bitmap photo){
         this.name = name;
         this.attempts = attempts;
         this.time = time;
@@ -36,11 +36,11 @@ public class User {
         return this.attempts;
     }
 
-    public void setTime(String time){
+    public void setTime(int time){
         this.time = time;
     }
 
-    public String getTime(){
+    public int getTime(){
         return this.time;
     }
 
@@ -52,39 +52,19 @@ public class User {
         return this.photo;
     }
 
-    public int compareRecords(User user){
-        int compareAttempts = this.getAttempts() - user.getAttempts();
+    public int compareRecords(User user) {
+        int compareRecords = this.getAttempts() - user.getAttempts();
 
-        if(compareAttempts == 0){
-            int compareTime = totalTime(this.time) - totalTime(user.getTime());
+        if (compareRecords == 0) {
+            int compareTime = this.getTime() - user.getTime();
 
-            if(compareTime == 0){
+            if (compareTime == 0) {
                 return 0;
-            }
-            else{
+            } else {
                 return compareTime;
             }
-        }
-        else{
-            return compareAttempts;
-        }
-    }
-
-    public int totalTime(String time){
-        String[] timeSplit = time.split(":");
-
-        int min = Integer.valueOf(timeSplit[0]);
-        int sec = Integer.valueOf(timeSplit[1]);
-
-        if(min == 0){
-            return sec;
-        }
-        else{
-            int minToSec = min*60;
-            int totalTime = minToSec+sec;
-
-            return totalTime;
+        } else {
+            return compareRecords;
         }
     }
-
 }
